@@ -11,3 +11,9 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+
+# etc
+*.sqlite3
+.vscode
+run.py
