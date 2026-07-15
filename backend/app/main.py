@@ -7,7 +7,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 ## ai chat
-from app import crud, schemas
 from app.chat.router import router as chat_router
 ##
 from app.db.init_db import init_db

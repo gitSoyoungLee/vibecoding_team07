@@ -3,3 +3,4 @@ uvicorn[standard]>=0.18
 SQLAlchemy>=1.4
 python-dotenv>=1.0
 pandas>=1.5
+openai>=1.0
