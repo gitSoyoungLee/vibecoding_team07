@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { fetchLocations, districtOf } from './api'
+import LocationDetailModal from './LocationDetailModal.vue'
 
 const CATEGORIES = [
   { label: '전체', ids: null },
@@ -18,6 +19,7 @@ const error = ref('')
 const selectedCategory = ref(CATEGORIES[0])
 const keywordInput = ref('')
 const activeKeyword = ref('')
+const selectedLocation = ref(null)
 
 async function load() {
   loading.value = true
@@ -43,6 +45,14 @@ function selectCategory(cat) {
 function onSearch() {
   activeKeyword.value = keywordInput.value.trim()
   load()
+}
+
+function openDetail(loc) {
+  selectedLocation.value = loc
+}
+
+function closeDetail() {
+  selectedLocation.value = null
 }
 
 onMounted(load)
@@ -85,7 +95,12 @@ onMounted(load)
         <div v-else-if="error">{{ error }}</div>
         <div v-else-if="locations.length === 0">표시할 장소가 없습니다.</div>
         <div v-else class="card-grid">
-          <div v-for="loc in locations" :key="loc.id" class="location-card">
+          <div
+            v-for="loc in locations"
+            :key="loc.id"
+            class="location-card"
+            @click="openDetail(loc)"
+          >
             <div class="card-image">
               <img v-if="loc.image_url" :src="loc.image_url" :alt="loc.title" />
               <div v-else class="card-image-fallback">이미지 없음</div>
@@ -96,6 +111,12 @@ onMounted(load)
         </div>
       </section>
     </div>
+
+    <LocationDetailModal
+      v-if="selectedLocation"
+      :location="selectedLocation"
+      @close="closeDetail"
+    />
   </div>
 </template>
 
