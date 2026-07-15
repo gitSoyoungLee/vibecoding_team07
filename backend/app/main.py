@@ -9,10 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
+from app.chat.router import router as chat_router
 from app.db.init_db import init_db
 from app.db.session import get_db
 
 app = FastAPI(title="Locations API")
+app.include_router(chat_router)
 
 app.add_middleware(
     CORSMiddleware,
