@@ -1,8 +1,14 @@
 <script setup>
+import { onMounted, ref } from 'vue'
+import { loadKakaoMaps } from './kakaoMap'
+
 const props = defineProps({
   location: { type: Object, required: true },
 })
 const emit = defineEmits(['close'])
+
+const mapContainer = ref(null)
+const mapError = ref('')
 
 function close() {
   emit('close')
@@ -11,6 +17,24 @@ function close() {
 function onKeydown(e) {
   if (e.key === 'Escape') close()
 }
+
+const hasCoords = props.location.latitude != null && props.location.longitude != null
+
+onMounted(async () => {
+  if (!hasCoords) return
+
+  try {
+    const kakao = await loadKakaoMaps()
+    const center = new kakao.maps.LatLng(props.location.latitude, props.location.longitude)
+    const map = new kakao.maps.Map(mapContainer.value, {
+      center,
+      level: 4,
+    })
+    new kakao.maps.Marker({ map, position: center })
+  } catch (e) {
+    mapError.value = e.message
+  }
+})
 </script>
 
 <template>
@@ -31,7 +55,9 @@ function onKeydown(e) {
           </p>
           <p v-if="location.tel" class="modal-tel">📞 {{ location.tel }}</p>
 
-          <!-- 카카오맵 시각화: 다음 작업에서 추가 예정 -->
+          <div v-show="hasCoords && !mapError" ref="mapContainer" class="modal-map"></div>
+          <p v-if="mapError" class="modal-map-fallback">{{ mapError }}</p>
+          <p v-else-if="!hasCoords" class="modal-map-fallback">지도 정보 없음</p>
         </div>
       </div>
     </div>
@@ -116,6 +142,20 @@ function onKeydown(e) {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+.modal-map {
+  margin-top: 16px;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-map-fallback {
+  margin-top: 16px;
+  color: var(--text, #6b6375);
+  font-size: 0.85rem;
 }
 
 .modal-enter-active,
