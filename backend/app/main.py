@@ -1,9 +1,18 @@
-from fastapi import FastAPI
+"""FastAPI 진입점. 앱 생성, CORS 설정, 라우트(엔드포인트) 정의를 담당.
+실행: cd backend && uvicorn app.main:app --reload
+"""
+
+from typing import List
+
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
+from app import crud, schemas
 from app.db.init_db import init_db
+from app.db.session import get_db
 
-
-# app = FastAPI()
+app = FastAPI(title="Locations API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,24 +22,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def startup():
     init_db()
 
 
-"""
-from fastapi import FastAPI, Depends
-from typing import List
-from sqlalchemy.orm import Session
-from backend.db.session import engine, get_db
-from backend.db import models
-from backend.app import schemas, crud
-
-models.Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Locations API")
-
 @app.get("/locations", response_model=List[schemas.LocationOut])
 def read_locations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_locations(db, skip=skip, limit=limit)
-"""
