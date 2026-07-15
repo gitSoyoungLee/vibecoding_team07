@@ -114,24 +114,41 @@
         @click="openPostDetail(post.id)"
       >
 
-        <div class="post-header">
+        <!-- 첫 줄 : 제목 + 카테고리 -->
+        <div class="post-top">
 
-          <h3>{{ post.title }}</h3>
+          <h3 class="post-title">
+            {{ post.title }}
+          </h3>
 
-          <span class="author">
-            {{ post.nickname }}
+          <span class="post-category">
+
+            {{ getCategoryName(post.category_id) }}
+
           </span>
 
         </div>
 
-        <div class="post-category">
-          {{ getCategoryName(post.category_id) }}
+        <!-- 둘째 줄 : 내용 미리보기 -->
+
+        <div class="post-preview">
+
+          {{ post.content }}
+
         </div>
 
+        <!-- 마지막 줄 -->
+
         <div class="post-meta">
+
+          <span>👤 {{ post.nickname }}</span>
+
           <span>👀 {{ post.views }}</span>
+
           <span>💬 {{ post.comment_count }}</span>
-          <span>{{ formatDate(post.created_at) }}</span>
+
+          <span>📅 {{ formatDate(post.created_at) }}</span>
+
         </div>
 
       </div>
@@ -952,32 +969,77 @@ select{
   cursor:pointer;
   transition:.2s;
 }
+.post-title{
 
+    margin:0;
+
+    font-size:24px;
+
+    font-weight:700;
+
+    color:#333;
+
+}
+.post-preview{
+
+    color:#666;
+
+    line-height:1.7;
+
+    margin-bottom:15px;
+
+    display:-webkit-box;
+
+    -webkit-line-clamp:2;
+
+    -webkit-box-orient:vertical;
+
+    overflow:hidden;
+
+}
 .post-card:hover{
   background:#f8f9fa;
 }
 
-.post-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.post-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:12px;
 }
 
 .post-category{
-  display:inline-block;
-  margin:8px 0;
-  padding:4px 10px;
-  background:#eef5ff;
-  border-radius:20px;
-  color:#0d6efd;
-  font-size:13px;
+
+    padding:6px 12px;
+
+    background:#eef5ff;
+
+    color:#0d6efd;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    white-space:nowrap;
+
 }
 
 .post-meta{
-  display:flex;
-  gap:18px;
-  color:#666;
-  font-size:13px;
+
+    display:flex;
+
+    gap:18px;
+
+    align-items:center;
+
+    color:#777;
+
+    font-size:13px;
+
+    border-top:1px solid #eee;
+
+    padding-top:12px;
+
 }
 
 .loading{
