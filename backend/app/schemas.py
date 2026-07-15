@@ -1,3 +1,7 @@
+"""API 요청/응답 형태 정의 (Pydantic). DB 테이블 구조는 db/models.py 참고.
+여기 필드를 바꾸면 API 응답 모양이 바뀌고, DB 컬럼을 바꾸려면 db/models.py를 고쳐야 한다.
+"""
+
 from pydantic import BaseModel
 from typing import Optional
 
@@ -27,4 +31,4 @@ class LocationOut(LocationBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
