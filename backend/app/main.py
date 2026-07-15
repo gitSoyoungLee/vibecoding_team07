@@ -4,6 +4,8 @@
 여기서 app.include_router(...) 한 줄만 추가하면 된다.
 """
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 ## ai chat
@@ -26,10 +28,13 @@ app = FastAPI(title="LocalHub API")
 app.include_router(chat_router)
 app.include_router(api_chat_router)
 
-# CORS 설정 (프론트 개발 주소 허용)
+# CORS 설정 (로컬 개발 주소는 기본 허용, 배포 도메인은 CORS_ORIGINS 환경변수로 추가)
+default_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+extra_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=default_origins + extra_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
