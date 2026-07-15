@@ -35,10 +35,7 @@ async function sendMessage() {
 
 <template>
   <div class="page">
-    <header class="hero">
-      <h1>Travel Assistant</h1>
-      <p>지도와 여행 정보를 한 번에 확인해보세요.</p>
-    </header>
+    <RouterView />
 
     <button class="float-button" @click="isOpen = !isOpen">
       {{ isOpen ? '닫기' : '챗봇 열기' }}
