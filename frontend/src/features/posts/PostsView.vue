@@ -444,18 +444,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { POST_CATEGORIES as categories } from '../../constants/postCategories'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
-
-const categories = [
-  { id: 0, name: '전체' },
-  { id: 1, name: '관광지' },
-  { id: 2, name: '레포츠·문화시설' },
-  { id: 3, name: '쇼핑' },
-  { id: 4, name: '숙박' },
-  { id: 5, name: '여행코스' },
-  { id: 6, name: '축제' }
-]
 
 const posts = ref([])
 const comments = ref([])

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { CATEGORIES } from '../features/locations/api'
+import { POST_CATEGORIES } from '../constants/postCategories'
 import heroBanner from '../assets/hero-banner.jpg'
 
 const router = useRouter()
@@ -13,17 +14,6 @@ function onSearch() {
 }
 
 const locationCategories = CATEGORIES.filter((c) => c.key !== 'all')
-
-const POST_CATEGORIES = [
-  { id: 0, name: '전체' },
-  { id: 1, name: '관광지' },
-  { id: 2, name: '레포츠' },
-  { id: 3, name: '문화시설' },
-  { id: 4, name: '쇼핑' },
-  { id: 5, name: '숙박' },
-  { id: 6, name: '여행코스' },
-  { id: 7, name: '축제' },
-]
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 const posts = ref([])
