@@ -44,3 +44,23 @@ def delete_post(post_id:int, payload: dict, db: Session = Depends(get_db)):
 def create_comment(post_id:int, payload: posts_schemas.CommentCreate, db: Session = Depends(get_db)):
     if not posts_crud.get_post(db, post_id): raise HTTPException(status_code=404, detail="Post not found")
     return posts_crud.create_comment(db, post_id, payload)
+
+@router.delete("/comments/{comment_id}")
+def delete_comment(
+    comment_id: int,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    comment = db.query(models.Comment).filter(
+        models.Comment.id == comment_id
+    ).first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    if comment.password != payload.get("password"):
+        raise HTTPException(status_code=403, detail="Invalid password")
+
+    posts_crud.delete_comment(db, comment_id)
+
+    return {"ok": True}
