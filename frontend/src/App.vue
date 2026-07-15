@@ -1,14 +1,15 @@
 <template>
   <div id="app-container">
     <header class="app-header">
-      <h1>📍 LocalHub</h1>
+      <RouterLink to="/" class="brand">📍 LocalHub</RouterLink>
       <nav class="nav-links">
+        <RouterLink to="/locations">🗺️ 장소</RouterLink>
         <RouterLink to="/posts">📋 게시판</RouterLink>
       </nav>
     </header>
 
     <main class="main-content">
-      <!-- 라우터 주소(/posts)에 맞춰 화면이 마운트되는 자리 -->
+      <!-- 라우터 주소에 맞춰 화면이 마운트되는 자리 -->
       <RouterView />
     </main>
 
@@ -37,6 +38,13 @@ import ChatWidget from './features/chat/ChatWidget.vue'
   border-bottom: 2px solid #eee;
   padding-bottom: 15px;
   margin-bottom: 20px;
+}
+
+.brand {
+  text-decoration: none;
+  color: inherit;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 .nav-links a {

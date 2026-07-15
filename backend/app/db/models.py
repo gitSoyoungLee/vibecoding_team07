@@ -5,6 +5,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Float,
     DateTime,
     ForeignKey,
 )
@@ -26,8 +27,11 @@ class Location(Base):
     zipcode = Column(String)
     tel = Column(String)
 
-    longitude = Column(String)
-    latitude = Column(String)
+    longitude = Column(Float)
+    latitude = Column(Float)
+    map_level = Column(Integer)
+    area_code = Column(String)
+    sigungu_code = Column(String)
 
     category1 = Column(String)
     category2 = Column(String)
@@ -35,6 +39,9 @@ class Location(Base):
 
     image_url = Column(Text)
     thumbnail_url = Column(Text)
+    copyright_code = Column(String)
+    created_time = Column(String)
+    modified_time = Column(String)
 
 
 class Post(Base):
