@@ -13,7 +13,7 @@ function onSearch() {
   router.push({ path: '/locations', query: q ? { keyword: q } : {} })
 }
 
-const locationCategories = CATEGORIES.filter((c) => c.key !== 'all')
+const locationCategories = CATEGORIES
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 const posts = ref([])
@@ -261,7 +261,7 @@ onMounted(loadPosts)
         <input
           v-model="keyword"
           class="search-input"
-          placeholder="장소명, 주소로 검색"
+          placeholder="궁금한 건 검색해보세요!"
           @keyup.enter="onSearch"
         />
       </div>
@@ -593,7 +593,6 @@ onMounted(loadPosts)
   width: 100%;
   height: 280px;
   object-fit: cover;
-  border-radius: 12px;
   display: block;
   margin-bottom: 32px;
 }
