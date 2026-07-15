@@ -122,7 +122,7 @@ def get_chat_reply(message: str, db: Optional[Session] = None) -> str:
             return _format_location_results(locations)
 
     if any(keyword in lowered for keyword in ["축제", "행사", "공연", "일정", "이벤트"]):
-        keyword = _extract_keyword(text) or "축제"
+        keyword = _extract_keyword(text) or "축제공연행사"
         locations = _search_locations(db, keyword)
         if locations:
             return _format_location_results(locations)

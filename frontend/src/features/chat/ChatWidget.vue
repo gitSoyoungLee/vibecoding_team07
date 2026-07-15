@@ -48,7 +48,7 @@
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { sendChatMessage } from './api'
 
-const STORAGE_KEY = 'localhub-chat-history'
+const STORAGE_KEY = 'exploreseoul-chat-history'
 const isOpen = ref(false)
 const input = ref('')
 const isLoading = ref(false)

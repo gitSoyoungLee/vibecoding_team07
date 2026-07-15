@@ -5,5 +5,5 @@ export const POST_CATEGORIES = [
   { id: 3, name: '쇼핑' },
   { id: 4, name: '숙박' },
   { id: 5, name: '여행코스' },
-  { id: 6, name: '축제' },
+  { id: 6, name: '축제공연행사' },
 ]

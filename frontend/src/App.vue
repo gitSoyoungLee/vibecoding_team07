@@ -1,7 +1,7 @@
 <template>
   <div id="app-container">
     <header class="app-header">
-      <RouterLink to="/" class="brand">📍 LocalHub</RouterLink>
+      <RouterLink to="/" class="brand">🌏 ExploreSeoul</RouterLink>
       <nav class="nav-links">
         <RouterLink to="/locations">🗺️ 장소</RouterLink>
         <RouterLink to="/posts">📋 게시판</RouterLink>
@@ -35,26 +35,52 @@ import ChatWidget from './features/chat/ChatWidget.vue'
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #eee;
+  border-bottom: 3px solid var(--accent);
   padding-bottom: 15px;
   margin-bottom: 20px;
 }
 
 .brand {
   text-decoration: none;
-  color: inherit;
-  font-size: 1.2em;
-  font-weight: bold;
+  color: #1a1a1a;
+  font-size: 1.5em;
+  font-weight: 900;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.5px;
+  transition: all 0.3s ease;
+}
+
+.brand:hover {
+  color: var(--primary-blue);
+  transform: scale(1.05);
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
 }
 
 .nav-links a {
-  margin-left: 20px;
   text-decoration: none;
-  color: #333;
-  font-weight: bold;
+  color: #666;
+  font-weight: 600;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-links a:hover {
+  color: var(--primary-blue);
+  border-bottom-color: var(--accent);
 }
 
 .nav-links a.router-link-active {
-  color: #007bff;
+  color: var(--primary-blue);
+  border-bottom-color: var(--accent);
+}
+
+.main-content {
+  background: #fff;
 }
 </style>
