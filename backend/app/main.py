@@ -11,8 +11,11 @@ from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.db.init_db import init_db
 from app.db.session import get_db
+from app.posts.router import router as posts_router
 
 app = FastAPI(title="Locations API")
+
+app.include_router(posts_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,3 +34,5 @@ def startup():
 @app.get("/locations", response_model=List[schemas.LocationOut])
 def read_locations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_locations(db, skip=skip, limit=limit)
+
+
