@@ -10,7 +10,7 @@ const router = useRouter()
 const keyword = ref('')
 function onSearch() {
   const q = keyword.value.trim()
-  router.push({ path: '/locations', query: q ? { keyword: q } : {} })
+  router.push({ path: '/search', query: q ? { q } : {} })
 }
 
 const locationCategories = CATEGORIES
