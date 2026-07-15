@@ -1,19 +1,17 @@
-"""FastAPI 진입점. 앱 생성, CORS 설정, 라우트(엔드포인트) 정의를 담당.
+"""FastAPI 진입점. 앱 생성, CORS 설정, 도메인별 라우터 등록을 담당.
 실행: cd backend && uvicorn app.main:app --reload
+각 도메인(locations, posts, chat 등)은 자기 폴더의 router.py를 만들고
+여기서 app.include_router(...) 한 줄만 추가하면 된다.
 """
 
-from typing import List
-
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 
-from app import crud, schemas
 from app.db.init_db import init_db
 from app.db.seed import seed
-from app.db.session import get_db
+from app.locations.router import router as locations_router
 
-app = FastAPI(title="Locations API")
+app = FastAPI(title="LocalHub API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,13 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(locations_router)
+
 
 @app.on_event("startup")
 def startup():  # 서버 시작 시
     init_db()   # DB 테이블 생성
-    seed()  # 공공 데이터 - 장소 데이터 적재
-
-
-@app.get("/locations", response_model=List[schemas.LocationOut])
-def read_locations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_locations(db, skip=skip, limit=limit)
+    seed()      # 공공 데이터 - 장소 데이터 적재
