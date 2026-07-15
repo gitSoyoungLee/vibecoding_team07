@@ -1,5 +1,15 @@
 const API_BASE = 'http://127.0.0.1:8000'
 
+export const CATEGORIES = [
+  { key: 'all', label: '전체', ids: null },
+  { key: 'tour', label: '관광지', ids: [12] },
+  { key: 'sports-culture', label: '레포츠·문화시설', ids: [28, 14] },
+  { key: 'shopping', label: '쇼핑', ids: [38] },
+  { key: 'lodging', label: '숙박', ids: [32] },
+  { key: 'course', label: '여행코스', ids: [25] },
+  { key: 'festival', label: '축제공연행사', ids: [15] },
+]
+
 export async function fetchLocations({ contentTypeIds, keyword, limit = 100 } = {}) {
   const params = new URLSearchParams()
   if (contentTypeIds && contentTypeIds.length) {

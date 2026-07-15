@@ -1,24 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { fetchLocations, districtOf } from './api'
+import { useRoute } from 'vue-router'
+import { fetchLocations, districtOf, CATEGORIES } from './api'
 import LocationDetailModal from './LocationDetailModal.vue'
 
-const CATEGORIES = [
-  { label: '전체', ids: null },
-  { label: '관광지', ids: [12] },
-  { label: '레포츠·문화시설', ids: [28, 14] },
-  { label: '쇼핑', ids: [38] },
-  { label: '숙박', ids: [32] },
-  { label: '여행코스', ids: [25] },
-  { label: '축제공연행사', ids: [15] },
-]
+const route = useRoute()
 
 const locations = ref([])
 const loading = ref(false)
 const error = ref('')
-const selectedCategory = ref(CATEGORIES[0])
-const keywordInput = ref('')
-const activeKeyword = ref('')
+const initialCategory =
+  CATEGORIES.find((c) => c.key === route.query.category) || CATEGORIES[0]
+const selectedCategory = ref(initialCategory)
+const keywordInput = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
+const activeKeyword = ref(keywordInput.value)
 const selectedLocation = ref(null)
 
 async function load() {
@@ -81,7 +76,7 @@ onMounted(load)
       <aside class="category-sidebar">
         <button
           v-for="cat in CATEGORIES"
-          :key="cat.label"
+          :key="cat.key"
           class="category-btn"
           :class="{ active: cat.label === selectedCategory.label }"
           @click="selectCategory(cat)"
