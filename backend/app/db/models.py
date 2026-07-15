@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import (
     Column,
@@ -63,12 +64,12 @@ class Post(Base):
 
     comment_count = Column(Integer, default=0)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(ZoneInfo("Asia/Seoul")))
 
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.now(ZoneInfo("Asia/Seoul")),
+        onupdate=datetime.now(ZoneInfo("Asia/Seoul")),
     )
 
     comments = relationship(
@@ -95,12 +96,12 @@ class Comment(Base):
 
     password = Column(Text, nullable=False)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(ZoneInfo("Asia/Seoul")))
 
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=datetime.now(ZoneInfo("Asia/Seoul")),
+        onupdate=datetime.now(ZoneInfo("Asia/Seoul")),
     )
 
     post = relationship(

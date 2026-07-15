@@ -2,13 +2,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.db import models
 
-def get_posts(db: Session, skip: int = 0, limit: int = 100, search: str | None = None):
+def get_posts(db, skip=0, limit=100, search=None, category_id=None):
     q = db.query(models.Post)
     if search:
         like = f"%{search}%"
         q = q.filter(or_(models.Post.title.ilike(like),
                          models.Post.content.ilike(like),
                          models.Post.nickname.ilike(like)))
+    if category_id:
+        q = q.filter(models.Post.category_id == category_id)
     return q.order_by(models.Post.created_at.desc()).offset(skip).limit(limit).all()
 
 def get_post(db: Session, post_id: int):

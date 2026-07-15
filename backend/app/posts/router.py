@@ -8,8 +8,14 @@ from app.db import models   # 변경: app에서 직접 import 하지 않고 db.m
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 @router.get("/", response_model=List[posts_schemas.PostOut])
-def list_posts(search: str | None = Query(None), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return posts_crud.get_posts(db, skip=skip, limit=limit, search=search)
+def list_posts(
+    search: str | None = Query(None),
+    category_id: int | None = Query(None),
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    return posts_crud.get_posts(db, skip=skip, limit=limit, search=search, category_id=category_id)
 
 @router.get("/{post_id}")
 def get_post_detail(post_id: int, db: Session = Depends(get_db)):
