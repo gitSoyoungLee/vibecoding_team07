@@ -3,7 +3,7 @@
 """
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 class LocationBase(BaseModel):
     content_id: Optional[str]
@@ -32,3 +32,8 @@ class LocationOut(LocationBase):
 
     class Config:
         from_attributes = True
+
+
+class LocationListOut(BaseModel):
+    items: List[LocationOut]
+    total: int

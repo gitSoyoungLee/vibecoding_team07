@@ -1,12 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchLocations, districtOf, CATEGORIES } from './api'
+import { fetchLocations, districtOf, CATEGORIES, PAGE_SIZE } from './api'
 import LocationDetailModal from './LocationDetailModal.vue'
 
 const route = useRoute()
 
 const locations = ref([])
+const total = ref(0)
+const page = ref(1)
 const loading = ref(false)
 const error = ref('')
 const initialCategory =
@@ -16,17 +18,39 @@ const keywordInput = ref(typeof route.query.keyword === 'string' ? route.query.k
 const activeKeyword = ref(keywordInput.value)
 const selectedLocation = ref(null)
 
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
+
+const pageNumbers = computed(() => {
+  const current = page.value
+  const last = totalPages.value
+  const window = 2
+  const pages = []
+  let prev = 0
+  for (let p = 1; p <= last; p++) {
+    if (p === 1 || p === last || (p >= current - window && p <= current + window)) {
+      if (prev && p - prev > 1) pages.push('...')
+      pages.push(p)
+      prev = p
+    }
+  }
+  return pages
+})
+
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    locations.value = await fetchLocations({
+    const data = await fetchLocations({
       contentTypeIds: selectedCategory.value.ids,
       keyword: activeKeyword.value,
+      page: page.value,
     })
+    locations.value = data.items
+    total.value = data.total
   } catch (e) {
     error.value = e.message
     locations.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -34,11 +58,19 @@ async function load() {
 
 function selectCategory(cat) {
   selectedCategory.value = cat
+  page.value = 1
   load()
 }
 
 function onSearch() {
   activeKeyword.value = keywordInput.value.trim()
+  page.value = 1
+  load()
+}
+
+function goToPage(p) {
+  if (p < 1 || p > totalPages.value || p === page.value) return
+  page.value = p
   load()
 }
 
@@ -104,6 +136,34 @@ onMounted(load)
             <div class="card-district">{{ districtOf(loc.addr1) }}</div>
           </div>
         </div>
+
+        <nav v-if="!loading && !error && total > 0" class="pagination">
+          <button
+            class="page-btn"
+            :disabled="page === 1"
+            @click="goToPage(page - 1)"
+          >
+            이전
+          </button>
+          <template v-for="(p, idx) in pageNumbers" :key="idx">
+            <span v-if="p === '...'" class="page-ellipsis">…</span>
+            <button
+              v-else
+              class="page-btn"
+              :class="{ active: p === page }"
+              @click="goToPage(p)"
+            >
+              {{ p }}
+            </button>
+          </template>
+          <button
+            class="page-btn"
+            :disabled="page === totalPages"
+            @click="goToPage(page + 1)"
+          >
+            다음
+          </button>
+        </nav>
       </section>
     </div>
 
@@ -258,5 +318,50 @@ onMounted(load)
   font-size: 0.8rem;
   font-weight: 500;
   text-align: left;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 6px;
+  background: transparent;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-btn.active {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: rgba(234, 179, 8, 0.6);
+  color: #92720a;
+  font-weight: 700;
+}
+
+.page-ellipsis {
+  padding: 0 4px;
+  color: var(--text, #6b6375);
+}
+
+@media (prefers-color-scheme: dark) {
+  .page-btn.active {
+    background: rgba(250, 204, 21, 0.22);
+    border-color: rgba(250, 204, 21, 0.55);
+    color: #fde68a;
+  }
 }
 </style>

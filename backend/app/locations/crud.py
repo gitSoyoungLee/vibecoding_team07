@@ -17,13 +17,11 @@ def get_location_by_content_id(db: Session, content_id: str) -> Optional[models.
     )
 
 
-def get_locations(
+def _filtered_query(
     db: Session,
-    skip: int = 0,
-    limit: int = 100,
     content_type_ids: Optional[List[int]] = None,
     keyword: Optional[str] = None,
-) -> List[models.Location]:
+):
     query = db.query(models.Location).filter(
         models.Location.latitude.isnot(None),
         models.Location.longitude.isnot(None),
@@ -39,4 +37,24 @@ def get_locations(
             | (models.Location.addr1.like(like_pattern))
         )
 
+    return query
+
+
+def get_locations(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    content_type_ids: Optional[List[int]] = None,
+    keyword: Optional[str] = None,
+) -> List[models.Location]:
+    query = _filtered_query(db, content_type_ids=content_type_ids, keyword=keyword)
     return query.offset(skip).limit(limit).all()
+
+
+def count_locations(
+    db: Session,
+    content_type_ids: Optional[List[int]] = None,
+    keyword: Optional[str] = None,
+) -> int:
+    query = _filtered_query(db, content_type_ids=content_type_ids, keyword=keyword)
+    return query.count()

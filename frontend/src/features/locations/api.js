@@ -10,13 +10,16 @@ export const CATEGORIES = [
   { key: 'festival', label: '축제공연행사', ids: [15] },
 ]
 
-export async function fetchLocations({ contentTypeIds, keyword, limit = 100 } = {}) {
+export const PAGE_SIZE = 24
+
+export async function fetchLocations({ contentTypeIds, keyword, page = 1, limit = PAGE_SIZE } = {}) {
   const params = new URLSearchParams()
   if (contentTypeIds && contentTypeIds.length) {
     params.set('content_type_id', contentTypeIds.join(','))
   }
   if (keyword) params.set('keyword', keyword)
-  if (limit) params.set('limit', limit)
+  params.set('limit', limit)
+  params.set('skip', (page - 1) * limit)
 
   const res = await fetch(`${API_BASE}/locations?${params.toString()}`)
   if (!res.ok) throw new Error('장소 목록을 불러오지 못했습니다.')
