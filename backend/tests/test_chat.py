@@ -11,7 +11,7 @@ from app.main import app
 
 
 def test_chat_message_endpoint_returns_reply(monkeypatch):
-    monkeypatch.setattr(crud, "get_chat_reply", lambda message: "mocked reply")
+    monkeypatch.setattr(crud, "get_chat_reply", lambda message, db=None: "mocked reply")
 
     client = TestClient(app)
     response = client.post(
@@ -23,6 +23,36 @@ def test_chat_message_endpoint_returns_reply(monkeypatch):
     body = response.json()
     assert "reply" in body
     assert body["reply"] == "mocked reply"
+
+
+def test_api_chat_endpoint_returns_reply(monkeypatch):
+    monkeypatch.setattr(crud, "get_chat_reply", lambda message, db=None: "mocked reply")
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/chat",
+        json={"message": "안녕, 챗봇아"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["reply"] == "mocked reply"
+
+
+def test_chat_reply_can_search_posts(monkeypatch):
+    class DummySession:
+        pass
+
+    monkeypatch.setattr(
+        crud,
+        "_search_posts",
+        lambda db, keyword: [SimpleNamespace(title="서울 여행 후기", content="좋았어요")],
+    )
+
+    reply = crud.get_chat_reply("커뮤니티 게시글에서 서울 여행 후기 찾아줘", db=DummySession())
+
+    assert "서울 여행 후기" in reply
+    assert "좋았어요" in reply
 
 
 def test_quota_error_is_reported_plainly(monkeypatch):
