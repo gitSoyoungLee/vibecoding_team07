@@ -6,7 +6,10 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+## ai chat
+from app import crud, schemas
+from app.chat.router import router as chat_router
+##
 from app.db.init_db import init_db
 from app.db.seed import seed
 from app.db.session import get_db
@@ -18,6 +21,9 @@ from app.locations.router import router as locations_router
 # from app.chat.router import router as chat_router
 
 app = FastAPI(title="LocalHub API")
+
+# ai chat
+app.include_router(chat_router)
 
 # CORS 설정 (프론트 개발 주소 허용)
 app.add_middleware(
