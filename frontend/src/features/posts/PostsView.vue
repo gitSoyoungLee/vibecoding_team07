@@ -1,3 +1,4 @@
+
 <template>
   <div class="posts-view">
     <h2>📋 자유 게시판</h2>
@@ -10,14 +11,42 @@
           <input v-model="form.nickname" placeholder="닉네임" required />
           <input v-model="form.password" type="password" placeholder="비밀번호" required />
         </div>
-        <input v-model="form.title" placeholder="제목" required />
+        <select v-model="form.category_id" required>
+            <option :value="null" disabled>
+              카테고리를 선택하세요
+            </option>
+
+            <option
+              v-for="category in categories.slice(1)"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </option>
+          </select>
+
+          <input v-model="form.title" placeholder="제목" required />
         <textarea v-model="form.content" placeholder="내용을 입력하세요..." rows="3" required></textarea>
         <button type="submit" class="btn-primary">글 등록</button>
       </form>
     </div>
 
     <!-- 검색 바 -->
-    <div class="search-bar">
+    <div class="category-bar">
+
+        <button
+          v-for="category in categories"
+          :key="category.id"
+          :class="{ active:selectedCategory===category.id }"
+          @click="selectedCategory=category.id; loadPosts()"
+        >
+          {{ category.name }}
+        </button>
+
+      </div>
+
+      <!-- 검색 바 -->
+      <div class="search-bar">
       <input v-model="searchQuery" @keyup.enter="loadPosts" placeholder="검색어를 입력하세요..." />
       <button @click="loadPosts" class="btn-secondary">검색</button>
     </div>
@@ -47,7 +76,19 @@
         <div class="post-body">{{ selectedPost.content }}</div>
 
         <div class="action-buttons">
-          <button @click="handleDeletePost(selectedPost.id)" class="btn-danger">글 삭제</button>
+          <button
+            @click="handleEditPost(selectedPost)"
+            class="btn-primary"
+          >
+            글 수정
+          </button>
+
+          <button
+            @click="handleDeletePost(selectedPost.id)"
+            class="btn-danger"
+          >
+            글 삭제
+          </button>
         </div>
 
         <hr />
@@ -59,6 +100,7 @@
           <div v-for="comment in comments" :key="comment.id" class="comment-item">
             <div class="comment-header">
               <strong>{{ comment.nickname }}</strong>
+              <button @click="handleEditComment(comment)" class="btn-secondary">수정</button>
               <button @click="handleDeleteComment(comment.id)" class="btn-sm-danger">삭제</button>
             </div>
             <p>{{ comment.content }}</p>
@@ -90,6 +132,18 @@ const searchQuery = ref('')
 const selectedPost = ref(null)
 const comments = ref([])
 
+const categories = [
+  { id: 0, name: "전체" },
+  { id: 1, name: "관광지" },
+  { id: 2, name: "레포츠·문화시설" },
+  { id: 3, name: "쇼핑" },
+  { id: 4, name: "숙박" },
+  { id: 5, name: "여행코스" },
+  { id: 6, name: "축제" },
+]
+
+const selectedCategory = ref(0)
+
 // 새 글 작성 폼 상태
 const form = ref({
   nickname: '',
@@ -108,17 +162,34 @@ const commentForm = ref({
 
 // 날짜 포맷팅
 function formatDate(dateStr) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleString()
+  if (!dateStr) return ""
+
+  const date = new Date(dateStr)
+
+  return date.toLocaleString("ko-KR",{
+      timeZone:"Asia/Seoul"
+  })
 }
 
 // 1. 게시글 목록 조회
 async function loadPosts() {
   loading.value = true
   try {
-    const url = searchQuery.value
-      ? `${API_BASE}/api/posts?search=${encodeURIComponent(searchQuery.value)}`
-      : `${API_BASE}/api/posts`
+    let url = `${API_BASE}/api/posts`
+
+const params = []
+
+if(searchQuery.value){
+    params.push(`search=${encodeURIComponent(searchQuery.value)}`)
+}
+
+if(selectedCategory.value!==0){
+    params.push(`category_id=${selectedCategory.value}`)
+}
+
+if(params.length){
+    url += "?" + params.join("&")
+}
     const res = await fetch(url)
     if (!res.ok) throw new Error('게시글 불러오기 실패')
     posts.value = await res.json()
@@ -185,6 +256,56 @@ async function handleDeletePost(postId) {
   }
 }
 
+async function handleEditPost(post){
+    const password = prompt("비밀번호를 입력하세요.")
+    if(!password) return
+    const title = prompt("제목",post.title)
+    const content = prompt("내용",post.content)
+    if(title===null || content===null) return
+    const res = await fetch(`${API_BASE}/api/posts/${post.id}`,{
+        method:"PUT",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            title,
+            content,
+            category_id:post.category_id,
+            password
+        })
+    })
+    if(!res.ok){
+        alert("비밀번호가 틀렸습니다.")
+        return
+    }
+    alert("수정 완료")
+    openPostDetail(post.id)
+    loadPosts()
+}
+async function handleEditComment(comment){
+    const password = prompt("비밀번호")
+    if(!password) return
+    const content = prompt("댓글 수정",comment.content)
+    if(content===null) return
+    const res = await fetch(
+        `${API_BASE}/api/posts/comments/${comment.id}`,
+        {
+            method:"PUT",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                content,
+                password
+            })
+        }
+    )
+    if(!res.ok){
+        alert("비밀번호 오류")
+        return
+    }
+    openPostDetail(selectedPost.value.id)
+}
 // 5. 댓글 작성
 async function handleCreateComment() {
   if (!selectedPost.value) return
@@ -253,4 +374,21 @@ button { cursor: pointer; border: none; padding: 8px 16px; border-radius: 4px; f
 .comments-section { margin-top: 15px; }
 .comment-item { background: #f8f9fa; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
 .comment-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 4px; }
+.category-bar{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.category-bar button{
+    padding:8px 16px;
+    border-radius:20px;
+}
+
+.category-bar button.active{
+    background:#0d6efd;
+    color:white;
+}
 </style>
+
