@@ -177,9 +177,9 @@ onMounted(load)
 
 <style scoped>
 .location-page {
-  max-width: 1080px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 0;
   font-weight: 500;
   letter-spacing: -0.01em;
 }

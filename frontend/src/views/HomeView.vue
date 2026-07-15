@@ -531,9 +531,9 @@ onMounted(loadPosts)
 
 <style scoped>
 .home-page {
-  max-width: 1080px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 0;
   font-weight: 500;
   letter-spacing: -0.01em;
 }

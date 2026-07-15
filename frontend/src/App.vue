@@ -26,9 +26,9 @@ import ChatWidget from './features/chat/ChatWidget.vue'
 <style scoped>
 #app-container {
   font-family: 'Noto Sans KR', sans-serif;
-  max-width: 1000px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
 }
 
 .app-header {
@@ -36,7 +36,7 @@ import ChatWidget from './features/chat/ChatWidget.vue'
   justify-content: space-between;
   align-items: center;
   border-bottom: 3px solid var(--accent);
-  padding-bottom: 15px;
+  padding: 0 24px 15px 24px;
   margin-bottom: 20px;
 }
 
@@ -82,5 +82,7 @@ import ChatWidget from './features/chat/ChatWidget.vue'
 
 .main-content {
   background: #fff;
+  padding: 0 24px 24px 24px;
 }
+
 </style>

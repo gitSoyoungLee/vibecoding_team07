@@ -882,10 +882,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.posts-view{
-  max-width:900px;
-  margin:0 auto;
-  padding:20px;
+.posts-view {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .card{

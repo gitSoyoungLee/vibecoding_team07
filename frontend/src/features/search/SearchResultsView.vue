@@ -233,7 +233,7 @@ onMounted(loadResults)
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 20px;
+  padding: 0;
 }
 
 .search-panel {
