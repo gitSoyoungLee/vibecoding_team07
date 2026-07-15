@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -30,3 +30,11 @@ def read_locations(
         content_type_ids=content_type_ids,
         keyword=keyword,
     )
+
+
+@router.get("/{content_id}", response_model=schemas.LocationOut)
+def read_location(content_id: str, db: Session = Depends(get_db)):
+    location = crud.get_location_by_content_id(db, content_id)
+    if location is None:
+        raise HTTPException(status_code=404, detail="Location not found")
+    return location

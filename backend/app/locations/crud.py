@@ -9,6 +9,14 @@ from sqlalchemy.orm import Session
 from app.db import models
 
 
+def get_location_by_content_id(db: Session, content_id: str) -> Optional[models.Location]:
+    return (
+        db.query(models.Location)
+        .filter(models.Location.content_id == content_id)
+        .first()
+    )
+
+
 def get_locations(
     db: Session,
     skip: int = 0,
