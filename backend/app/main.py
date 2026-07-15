@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.db.init_db import init_db
+from app.db.seed import seed
 from app.db.session import get_db
 
 app = FastAPI(title="Locations API")
@@ -24,8 +25,9 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def startup():
-    init_db()
+def startup():  # 서버 시작 시
+    init_db()   # DB 테이블 생성
+    seed()  # 공공 데이터 - 장소 데이터 적재
 
 
 @app.get("/locations", response_model=List[schemas.LocationOut])
