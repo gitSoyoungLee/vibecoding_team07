@@ -1,3 +1,7 @@
+"""SQLAlchemy ORM 모델. SQLite locations 테이블의 실제 스키마 정의.
+컬럼을 추가/변경하면 이 파일을 고치고, init_db.py의 create_all()로 반영한다.
+"""
+
 from sqlalchemy import Column, Integer, String, Float, Text
 from sqlalchemy.orm import declarative_base
 
