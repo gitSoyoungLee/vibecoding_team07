@@ -71,6 +71,15 @@ def test_quota_error_is_reported_plainly(monkeypatch):
     assert "429" in response.json()["reply"]
 
 
+def test_chat_reply_generates_course_style_response():
+    reply = crud.get_chat_reply("홍대 근처에서 친구랑 오후 2시부터 놀고 싶어")
+
+    assert "🎵" in reply
+    assert "14:00" in reply
+    assert "홍대" in reply
+    assert "친구" in reply
+
+
 def test_chat_uses_configured_model(monkeypatch):
     captured = {}
 

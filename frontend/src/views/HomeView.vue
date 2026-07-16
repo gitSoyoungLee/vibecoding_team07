@@ -20,6 +20,17 @@ const posts = ref([])
 const postsLoading = ref(false)
 const postsError = ref('')
 const selectedPostCategory = ref(POST_CATEGORIES[0])
+const coursePrompts = [
+  { label: '홍대 친구 코스', prompt: '홍대 근처에서 친구랑 오후 2시부터 놀고 싶어' },
+  { label: '강남 데이트 코스', prompt: '강남에서 데이트 코스 추천해줘' },
+  { label: '비 오는 날 혼자 코스', prompt: '비 오는 날 혼자 여유롭게 서울에서 놀고 싶어' },
+]
+
+function startCoursePrompt(prompt) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('travel-planner:prompt', { detail: { prompt } }))
+  }
+}
 
 // 상세 모달 및 에디터 관련 반응형 상태
 const selectedPost = ref(null)
@@ -279,6 +290,24 @@ onMounted(loadPosts)
     </div>
 
     <img :src="heroBanner" alt="2026 Seoul" class="hero-banner" />
+
+    <section class="course-card">
+      <div>
+        <h2 class="section-title">바이브 여행 코스</h2>
+        <p class="course-copy">출발 시간이나 분위기만 알려주면 챗봇이 바로 1일 코스를 짜드려요.</p>
+      </div>
+      <div class="course-actions">
+        <button
+          v-for="item in coursePrompts"
+          :key="item.label"
+          type="button"
+          class="course-btn"
+          @click="startCoursePrompt(item.prompt)"
+        >
+          {{ item.label }}
+        </button>
+      </div>
+    </section>
 
     <section class="board-preview">
       <h2 class="section-title">게시판</h2>
@@ -599,9 +628,43 @@ onMounted(loadPosts)
 
 .section-title {
   text-align: left;
-  margin: 0 0 16px;
+  margin: 0 0 8px;
   font-size: 1.3rem;
   font-weight: 700;
+}
+
+.course-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fefce8);
+  margin-bottom: 24px;
+}
+
+.course-copy {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.course-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.course-btn {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .board-row {
