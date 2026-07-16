@@ -1,16 +1,32 @@
 <template>
   <div class="chat-widget">
     <button class="float-btn" @click="toggleChat">
-      💬 {{ isOpen ? '닫기' : '챗봇' }}
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" />
+      </svg>
+      {{ isOpen ? '닫기' : '챗봇' }}
     </button>
 
     <div v-if="isOpen" class="chat-box" :style="boxStyle">
+      <div class="resize-handle" @pointerdown="startResize" />
+
       <div class="chat-header" @pointerdown="startDrag">
-        <div>
-          <strong>AI 챗봇</strong>
-          <div class="sub-title">여행지와 게시판을 도와드려요</div>
+        <div class="chat-header-left">
+          <div class="chat-avatar">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2">
+              <path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" />
+            </svg>
+          </div>
+          <div>
+            <strong>AI 챗봇</strong>
+            <div class="sub-title">여행지와 게시판을 도와드려요</div>
+          </div>
         </div>
-        <button class="close-btn" @click.stop="toggleChat">✕</button>
+        <button class="close-btn" @click.stop="toggleChat" aria-label="닫기">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
 
       <div class="chat-body">
@@ -24,12 +40,21 @@
           </div>
         </div>
 
+        <div v-if="messages.length <= 1" class="faq-chips">
+          <button
+            v-for="faq in faqSuggestions"
+            :key="faq"
+            class="faq-chip"
+            @click="sendSuggestion(faq)"
+          >
+            {{ faq }}
+          </button>
+        </div>
+
         <div v-if="isLoading" class="message-row bot">
           <div class="bubble typing">답변 생성 중...</div>
         </div>
       </div>
-
-      <div class="resize-handle" @pointerdown="startResize" />
 
       <form class="chat-input-area" @submit.prevent="submitMessage">
         <input
@@ -49,13 +74,14 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { sendChatMessage } from './api'
 
 const STORAGE_KEY = 'localhub-chat-history'
+const faqSuggestions = ['관광지 추천해줘', '이번 주 축제 알려줘', '쇼핑하는 곳 추천해줘']
 const isOpen = ref(false)
 const input = ref('')
 const isLoading = ref(false)
 const isDragging = ref(false)
 const isResizing = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
-const resizeStart = ref({ x: 0, y: 0, width: 320, height: 420 })
+const resizeStart = ref({ x: 0, y: 0, width: 320, height: 420, left: 0, top: 0 })
 const position = ref({ x: 0, y: 0 })
 const size = ref({ width: 320, height: 420 })
 
@@ -122,6 +148,8 @@ function startResize(event) {
     y: event.clientY,
     width: size.value.width,
     height: size.value.height,
+    left: position.value.x,
+    top: position.value.y,
   }
   isResizing.value = true
 }
@@ -135,13 +163,25 @@ function handlePointerMove(event) {
   }
 
   if (isResizing.value) {
-    size.value = {
-      width: clamp(resizeStart.value.width + (event.clientX - resizeStart.value.x), 280, window.innerWidth - 24),
-      height: clamp(resizeStart.value.height + (event.clientY - resizeStart.value.y), 320, window.innerHeight - 24),
-    }
+    // 좌측 상단 핸들: 우측/하단 모서리를 고정한 채 좌측·상단으로 커진다.
+    const rightEdge = resizeStart.value.left + resizeStart.value.width
+    const bottomEdge = resizeStart.value.top + resizeStart.value.height
+
+    const newWidth = clamp(
+      resizeStart.value.width - (event.clientX - resizeStart.value.x),
+      280,
+      window.innerWidth - 24
+    )
+    const newHeight = clamp(
+      resizeStart.value.height - (event.clientY - resizeStart.value.y),
+      320,
+      window.innerHeight - 24
+    )
+
+    size.value = { width: newWidth, height: newHeight }
     position.value = {
-      x: clamp(position.value.x, 8, window.innerWidth - size.value.width - 8),
-      y: clamp(position.value.y, 8, window.innerHeight - size.value.height - 8),
+      x: clamp(rightEdge - newWidth, 8, window.innerWidth - newWidth - 8),
+      y: clamp(bottomEdge - newHeight, 8, window.innerHeight - newHeight - 8),
     }
   }
 }
@@ -169,6 +209,11 @@ async function submitMessage() {
   }
 }
 
+function sendSuggestion(text) {
+  input.value = text
+  submitMessage()
+}
+
 onMounted(() => {
   setDefaultPosition()
   window.addEventListener('pointermove', handlePointerMove)
@@ -190,21 +235,25 @@ onBeforeUnmount(() => {
 }
 
 .float-btn {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: #fff;
   border: none;
-  padding: 12px 16px;
+  padding: 14px 20px;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
   font-weight: 700;
+  font-size: 14px;
+  font-family: inherit;
 }
 
 .chat-box {
   position: fixed;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  background: var(--bg, #fff);
+  border-radius: 18px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
   display: flex;
   flex-direction: column;
@@ -215,38 +264,57 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--ink, #1c1917);
+  color: #fff;
   cursor: grab;
 }
 
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: #2563eb;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .chat-header strong {
-  color: #0f172a;
+  font-size: 14.5px;
+  font-weight: 800;
 }
 
 .sub-title {
-  font-size: 0.8rem;
-  color: #475569;
+  font-size: 11.5px;
+  color: #a8a29e;
   margin-top: 2px;
 }
 
 .close-btn {
   border: none;
   background: transparent;
-  font-size: 1rem;
   cursor: pointer;
-  color: #334155;
+  color: #a8a29e;
+  display: flex;
 }
 
 .chat-body {
   flex: 1;
-  padding: 12px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   overflow-y: auto;
-  background: #f8fafc;
+  background: var(--surface, #faf9f7);
 }
 
 .message-row {
@@ -263,56 +331,82 @@ onBeforeUnmount(() => {
 
 .bubble {
   max-width: 85%;
-  padding: 8px 10px;
-  border-radius: 12px;
-  line-height: 1.4;
-  font-size: 0.95rem;
+  padding: 11px 14px;
+  line-height: 1.55;
+  font-size: 13.5px;
   white-space: pre-wrap;
+}
+
+.message-row.bot .bubble {
+  background: #fff;
+  border: 1px solid var(--border, #ece7df);
+  color: var(--ink, #1c1917);
+  border-radius: 4px 14px 14px 14px;
 }
 
 .message-row.user .bubble {
   background: #2563eb;
-  color: white;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 14px 4px 14px 14px;
 }
 
-.message-row.bot .bubble {
-  background: #e2e8f0;
-  color: #0f172a;
+.faq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.faq-chip {
+  border: 1px solid #2563eb;
+  color: #1d4ed8;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
 }
 
 .resize-handle {
+  position: absolute;
+  left: 3px;
+  top: 3px;
   width: 16px;
   height: 16px;
-  align-self: flex-end;
+  z-index: 1;
   cursor: nwse-resize;
-  margin-right: 4px;
-  margin-bottom: 4px;
-  background: linear-gradient(135deg, transparent 40%, #94a3b8 40%, #94a3b8 60%, transparent 60%);
+  background: linear-gradient(135deg, transparent 40%, #cbd5e1 40%, #cbd5e1 60%, transparent 60%);
+  border-radius: 3px;
 }
 
 .chat-input-area {
   display: flex;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border, #ece7df);
   padding: 10px;
   gap: 8px;
-  background: white;
+  background: #fff;
 }
 
 .chat-input-area input {
   flex: 1;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong, #e3ddd3);
   border-radius: 8px;
   padding: 8px 10px;
   outline: none;
+  font-family: inherit;
 }
 
 .chat-input-area button {
   border: none;
-  background: #2563eb;
+  background: var(--ink, #1c1917);
   color: white;
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .chat-input-area button:disabled {
