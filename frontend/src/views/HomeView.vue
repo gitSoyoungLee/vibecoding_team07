@@ -21,31 +21,6 @@ const postsLoading = ref(false)
 const postsError = ref('')
 const selectedPostCategory = ref(POST_CATEGORIES[0])
 
-// 상세 모달 및 에디터 관련 반응형 상태
-const selectedPost = ref(null)
-const comments = ref([])
-const editingPost = ref(false)
-const editingComment = ref(null)
-
-const editForm = ref({
-  nickname: '',
-  password: '',
-  category_id: null,
-  title: '',
-  content: ''
-})
-
-const commentForm = ref({
-  nickname: '',
-  password: '',
-  content: ''
-})
-
-const commentEdit = ref({
-  content: '',
-  password: ''
-})
-
 const previewPosts = computed(() => {
   const list =
     selectedPostCategory.value.id === 0
@@ -54,11 +29,8 @@ const previewPosts = computed(() => {
   return list.slice(0, 6)
 })
 
-function formatDate(date) {
-  if (!date) return ''
-  return new Date(date).toLocaleString('ko-KR', {
-    timeZone: 'Asia/Seoul'
-  })
+function categoryName(id) {
+  return POST_CATEGORIES.find((c) => c.id === Number(id))?.name || '전체'
 }
 
 async function loadPosts() {
@@ -76,175 +48,8 @@ async function loadPosts() {
   }
 }
 
-async function openPost(postId) {
-  try {
-    const res = await fetch(`${API_BASE}/api/posts/${postId}`)
-    if (!res.ok) throw new Error()
-    const data = await res.json()
-
-    selectedPost.value = data.post
-    comments.value = data.comments
-    editingPost.value = false
-    editingComment.value = null
-  } catch {
-    alert('게시글을 불러오지 못했습니다.')
-  }
-}
-
-function closeModal() {
-  selectedPost.value = null
-  comments.value = []
-  editingPost.value = false
-  editingComment.value = null
-}
-
-// 게시글 수정 시작
-function startEditPost() {
-  editForm.value = {
-    nickname: selectedPost.value.nickname,
-    password: '',
-    category_id: selectedPost.value.category_id,
-    title: selectedPost.value.title,
-    content: selectedPost.value.content
-  }
-  editingPost.value = true
-}
-
-// 게시글 수정 완료
-async function updatePost() {
-  const res = await fetch(
-    `${API_BASE}/api/posts/${selectedPost.value.id}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(editForm.value)
-    }
-  )
-
-  if (!res.ok) {
-    alert('비밀번호가 올바르지 않습니다.')
-    return
-  }
-
-  editingPost.value = false
-  await openPost(selectedPost.value.id)
-  await loadPosts()
-}
-
-// 게시글 삭제
-async function handleDeletePost(id) {
-  const password = prompt('비밀번호를 입력하세요.')
-  if (!password) return
-
-  const res = await fetch(
-    `${API_BASE}/api/posts/${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ password })
-    }
-  )
-
-  if (!res.ok) {
-    alert('비밀번호 오류')
-    return
-  }
-
-  closeModal()
-  await loadPosts()
-}
-
-// 댓글 등록
-async function handleCreateComment() {
-  const res = await fetch(
-    `${API_BASE}/api/posts/${selectedPost.value.id}/comments`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(commentForm.value)
-    }
-  )
-
-  if (!res.ok) {
-    alert('댓글 등록 실패')
-    return
-  }
-
-  commentForm.value = {
-    nickname: '',
-    password: '',
-    content: ''
-  }
-
-  await openPost(selectedPost.value.id)
-  await loadPosts()
-}
-
-// 댓글 수정 시작
-function startEditComment(comment) {
-  editingComment.value = comment.id
-  commentEdit.value = {
-    content: comment.content,
-    password: ''
-  }
-}
-
-// 댓글 수정 취소
-function cancelEditComment() {
-  editingComment.value = null
-}
-
-// 댓글 수정 완료
-async function updateComment(id) {
-  const res = await fetch(
-    `${API_BASE}/api/posts/comments/${id}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(commentEdit.value)
-    }
-  )
-
-  if (!res.ok) {
-    alert('비밀번호가 올바르지 않습니다.')
-    return
-  }
-
-  editingComment.value = null
-  await openPost(selectedPost.value.id)
-}
-
-// 댓글 삭제
-async function handleDeleteComment(id) {
-  const password = prompt('비밀번호를 입력하세요.')
-  if (!password) return
-
-  const res = await fetch(
-    `${API_BASE}/api/posts/comments/${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ password })
-    }
-  )
-
-  if (!res.ok) {
-    alert('삭제 실패')
-    return
-  }
-
-  await openPost(selectedPost.value.id)
-  await loadPosts()
+function openPost(postId) {
+  router.push(`/posts/${postId}`)
 }
 
 onMounted(loadPosts)
@@ -254,9 +59,9 @@ onMounted(loadPosts)
   <div class="home-page">
     <div class="search-row">
       <div class="search-input-wrap">
-        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
-          <line x1="16.2" y1="16.2" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <svg class="search-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-4-4" stroke-linecap="round" />
         </svg>
         <input
           v-model="keyword"
@@ -278,10 +83,19 @@ onMounted(loadPosts)
       </RouterLink>
     </div>
 
-    <img :src="heroBanner" alt="2026 Seoul" class="hero-banner" />
+    <div class="hero-banner">
+      <img :src="heroBanner" alt="2026 Seoul" />
+      <div class="hero-overlay">
+        <span class="hero-title">서울, 오늘은 어디로 갈까요?</span>
+        <span class="hero-subtitle">관광 정보를 한곳에서 보고, 경험은 익명으로 나눠요</span>
+      </div>
+    </div>
 
     <section class="board-preview">
-      <h2 class="section-title">게시판</h2>
+      <div class="section-head">
+        <h2 class="section-title">게시판</h2>
+        <RouterLink to="/posts" class="see-all">전체 보기 →</RouterLink>
+      </div>
 
       <div class="board-row">
         <aside class="post-category-sidebar">
@@ -297,9 +111,9 @@ onMounted(loadPosts)
         </aside>
 
         <div class="post-list">
-          <div v-if="postsLoading">불러오는 중...</div>
-          <div v-else-if="postsError">{{ postsError }}</div>
-          <div v-else-if="previewPosts.length === 0">게시글이 없습니다.</div>
+          <div v-if="postsLoading" class="post-list-empty">불러오는 중...</div>
+          <div v-else-if="postsError" class="post-list-empty">{{ postsError }}</div>
+          <div v-else-if="previewPosts.length === 0" class="post-list-empty">게시글이 없습니다.</div>
           <template v-else>
             <div
               v-for="post in previewPosts"
@@ -307,6 +121,7 @@ onMounted(loadPosts)
               class="post-row"
               @click="openPost(post.id)"
             >
+              <span class="post-cat">{{ categoryName(post.category_id) }}</span>
               <span class="post-title">{{ post.title }}</span>
               <span class="post-meta">{{ post.nickname }} · 댓글 {{ post.comment_count }}</span>
             </div>
@@ -314,228 +129,14 @@ onMounted(loadPosts)
         </div>
       </div>
     </section>
-
-    <!-- 게시글 상세 & 수정 & 댓글 모달 -->
-    <div
-      v-if="selectedPost"
-      class="modal-overlay"
-      @click.self="closeModal"
-    >
-      <div class="modal-content">
-        <button
-          class="close-btn"
-          @click="closeModal"
-        >
-          ✕
-        </button>
-
-        <!-- 일반 조회 모드 -->
-        <template v-if="!editingPost">
-          <h2>{{ selectedPost.title }}</h2>
-
-          <div class="post-info">
-            <span>{{ selectedPost.nickname }}</span>
-            <span>·</span>
-            <span>{{ POST_CATEGORIES.find(c => c.id === Number(selectedPost.category_id))?.name || '자유게시판' }}</span>
-            <span>·</span>
-            <span>조회수 {{ selectedPost.views }}</span>
-          </div>
-
-          <div class="post-body">
-            {{ selectedPost.content }}
-          </div>
-
-          <div class="action-buttons">
-            <button
-              class="btn-edit"
-              @click="startEditPost"
-            >
-              수정
-            </button>
-            <button
-              class="btn-delete"
-              @click="handleDeletePost(selectedPost.id)"
-            >
-              삭제
-            </button>
-          </div>
-        </template>
-
-        <!-- 게시글 수정 모드 -->
-        <template v-else>
-          <h2>게시글 수정</h2>
-
-          <div class="post-form">
-            <input
-              v-model="editForm.nickname"
-              placeholder="닉네임"
-            />
-
-            <input
-              type="password"
-              v-model="editForm.password"
-              placeholder="비밀번호"
-            />
-
-            <select v-model="editForm.category_id">
-              <option
-                v-for="category in POST_CATEGORIES.slice(1)"
-                :key="category.id"
-                :value="category.id"
-              >
-                {{ category.name }}
-              </option>
-            </select>
-
-            <input
-              v-model="editForm.title"
-              placeholder="제목"
-            />
-
-            <textarea
-              rows="5"
-              v-model="editForm.content"
-            ></textarea>
-
-            <div class="action-buttons">
-              <button
-                class="btn-primary"
-                @click="updatePost"
-              >
-                수정 완료
-              </button>
-              <button
-                class="btn-secondary"
-                @click="editingPost = false"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <hr />
-
-        <!-- 댓글 섹션 -->
-        <div class="comments-section">
-          <h3>💬 댓글</h3>
-
-          <div
-            v-if="comments.length === 0"
-            class="no-comments"
-          >
-            댓글이 없습니다.
-          </div>
-
-          <div
-            v-for="comment in comments"
-            :key="comment.id"
-            class="comment-item"
-          >
-            <div class="comment-header">
-              <strong>{{ comment.nickname }}</strong>
-
-              <div class="comment-actions">
-                <button
-                  class="btn-edit"
-                  @click="startEditComment(comment)"
-                >
-                  수정
-                </button>
-                <button
-                  class="btn-delete"
-                  @click="handleDeleteComment(comment.id)"
-                >
-                  삭제
-                </button>
-              </div>
-            </div>
-
-            <!-- 댓글 내용 보기 상태 -->
-            <template v-if="editingComment !== comment.id">
-              <p>{{ comment.content }}</p>
-              <small>{{ formatDate(comment.created_at) }}</small>
-            </template>
-
-            <!-- 댓글 수정 상태 -->
-            <template v-else>
-              <div class="comment-form edit-box">
-                <textarea
-                  rows="3"
-                  v-model="commentEdit.content"
-                ></textarea>
-
-                <input
-                  type="password"
-                  v-model="commentEdit.password"
-                  placeholder="비밀번호"
-                />
-
-                <div class="action-buttons edit-actions">
-                  <button
-                    class="btn-primary"
-                    @click="updateComment(comment.id)"
-                  >
-                    저장
-                  </button>
-                  <button
-                    class="btn-secondary"
-                    @click="cancelEditComment"
-                  >
-                    취소
-                  </button>
-                </div>
-              </div>
-            </template>
-          </div>
-
-          <!-- 댓글 작성 -->
-          <form
-            class="comment-form"
-            @submit.prevent="handleCreateComment"
-          >
-            <div class="form-row">
-              <input
-                v-model="commentForm.nickname"
-                placeholder="닉네임"
-                required
-              />
-
-              <input
-                type="password"
-                v-model="commentForm.password"
-                placeholder="비밀번호"
-                required
-              />
-            </div>
-
-            <textarea
-              rows="3"
-              v-model="commentForm.content"
-              placeholder="댓글을 입력하세요."
-              required
-            ></textarea>
-
-            <button
-              class="btn-secondary"
-              type="submit"
-            >
-              댓글 등록
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
 .home-page {
-  max-width: 1080px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  padding: 24px 40px 56px;
 }
 
 .search-row {
@@ -547,24 +148,33 @@ onMounted(loadPosts)
 .search-input-wrap {
   position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--border-strong, #e3ddd3);
+  border-radius: 999px;
+  padding: 14px 20px;
+  box-shadow: 0 1px 4px rgba(28, 25, 23, 0.04);
 }
 
 .search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text, #6b6375);
-  pointer-events: none;
+  color: var(--text-faint, #a8a29e);
+  flex-shrink: 0;
 }
 
 .search-input {
-  width: 100%;
-  padding: 10px 12px 10px 38px;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 6px;
-  font-weight: 500;
-  box-sizing: border-box;
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14.5px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--ink, #1c1917);
+}
+
+.search-input::placeholder {
+  color: var(--text-faint, #a8a29e);
 }
 
 .category-row {
@@ -575,33 +185,77 @@ onMounted(loadPosts)
 }
 
 .category-chip {
-  padding: 8px 14px;
-  border: 1px solid var(--border, #e5e4e7);
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong, #e3ddd3);
   border-radius: 999px;
   text-decoration: none;
-  color: inherit;
+  color: var(--text, #57534e);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .category-chip:hover {
-  background: rgba(250, 204, 21, 0.2);
-  border-color: rgba(234, 179, 8, 0.6);
+  background: var(--accent-soft, #fef3c7);
+  border-color: var(--accent, #facc15);
+  color: var(--accent-ink, #a16207);
 }
 
 .hero-banner {
-  width: 100%;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
   height: 280px;
-  object-fit: cover;
-  display: block;
   margin-bottom: 32px;
 }
 
-.section-title {
-  text-align: left;
-  margin: 0 0 16px;
-  font-size: 1.3rem;
+.hero-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 22px 26px;
+  background: linear-gradient(transparent, rgba(28, 25, 23, 0.6));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-title {
+  font-family: var(--serif, 'Gowun Batang', serif);
+  font-size: 26px;
   font-weight: 700;
+  color: #fff;
+}
+
+.hero-subtitle {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.see-all {
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent-ink-strong, #ca8a04);
 }
 
 .board-row {
@@ -613,65 +267,82 @@ onMounted(loadPosts)
 .post-category-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 160px;
+  border: 1px solid var(--border, #ece7df);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 190px;
   flex-shrink: 0;
 }
 
 .category-btn {
   text-align: left;
-  padding: 8px 12px;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  padding: 11px 16px;
+  border: none;
+  border-top: 1px solid var(--border, #ece7df);
   background: transparent;
+  font-size: 13.5px;
   font-weight: 500;
+  color: var(--text, #57534e);
   cursor: pointer;
 }
 
-.category-btn.active {
-  background: rgba(250, 204, 21, 0.2);
-  border-color: rgba(234, 179, 8, 0.6);
-  color: #92720a;
-  font-weight: 700;
+.category-btn:first-child {
+  border-top: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  .category-btn.active {
-    background: rgba(250, 204, 21, 0.22);
-    border-color: rgba(250, 204, 21, 0.55);
-    color: #fde68a;
-  }
+.category-btn.active {
+  background: var(--accent-soft, #fef3c7);
+  color: var(--accent-ink, #a16207);
+  font-weight: 700;
+  border-left: 3px solid var(--accent, #facc15);
 }
 
 .post-list {
   flex: 1;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 8px;
+  border: 1px solid var(--border, #ece7df);
+  border-radius: 12px;
   overflow: hidden;
+}
+
+.post-list-empty {
+  padding: 20px;
+  color: var(--text-muted, #78716c);
+  font-size: 13.5px;
 }
 
 .post-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border, #e5e4e7);
-  text-decoration: none;
-  color: inherit;
+  padding: 15px 20px;
+  border-top: 1px solid var(--border, #ece7df);
   cursor: pointer;
 }
 
-.post-row:last-child {
-  border-bottom: none;
+.post-row:first-child {
+  border-top: none;
 }
 
 .post-row:hover {
-  background: var(--code-bg, #f4f3ec);
+  background: var(--surface, #faf9f7);
+}
+
+.post-cat {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-ink, #a16207);
+  background: var(--accent-soft, #fef3c7);
+  border-radius: 4px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .post-title {
+  font-size: 14.5px;
   font-weight: 600;
+  color: var(--ink, #1c1917);
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -679,178 +350,8 @@ onMounted(loadPosts)
 
 .post-meta {
   flex-shrink: 0;
-  font-size: 0.8rem;
-  color: var(--text, #6b6375);
-}
-
-/* --- 모달 레이아웃 및 폼 통합 스타일 --- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, .45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 800px;
-  max-width: 95%;
-  max-height: 85vh;
-  overflow: auto;
-  background: white;
-  border-radius: 10px;
-  padding: 30px;
-  position: relative;
-  box-sizing: border-box;
-}
-
-.close-btn {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  border: none;
-  background: none;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.post-info {
-  display: flex;
-  gap: 8px;
-  color: var(--text, #6b6375);
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-}
-
-.post-body {
-  margin: 25px 0;
-  line-height: 1.8;
-  white-space: pre-wrap;
-}
-
-/* 포스트 작성 및 댓글 폼 관련 */
-.post-form,
-.comment-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.form-row {
-  display: flex;
-  gap: 10px;
-}
-
-.form-row input {
-  flex: 1;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border, #e5e4e7);
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.comments-section {
-  margin-top: 20px;
-}
-
-.comment-item {
-  background: #f7f7f7;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.comment-item p {
-  margin: 6px 0;
-  line-height: 1.5;
-}
-
-.comment-item small {
-  color: #888;
-  font-size: 11px;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.comment-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.no-comments {
-  text-align: center;
-  color: #777;
-  padding: 20px;
-}
-
-/* --- 공통 기능 버튼 클래스 --- */
-.btn-primary {
-  background: #0d6efd;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-edit,
-.btn-delete {
-  width: 70px;
-  height: 34px;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.btn-edit {
-  background: #6c757d;
-}
-
-.btn-delete {
-  background: #dc3545;
-}
-
-.edit-box {
-  margin-top: 10px;
-}
-
-.edit-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--text-faint, #a8a29e);
+  white-space: nowrap;
 }
 </style>
