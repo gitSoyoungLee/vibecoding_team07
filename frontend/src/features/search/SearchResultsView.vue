@@ -1,11 +1,16 @@
 <template>
   <div class="search-results-page">
     <div class="search-panel">
-      <input
-        v-model="searchKeyword"
-        @keyup.enter="onSearch"
-        placeholder="검색어를 입력하세요. 장소와 게시판을 동시에 검색합니다."
-      />
+      <div class="search-input-wrap">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" stroke-linecap="round" />
+        </svg>
+        <input
+          v-model="searchKeyword"
+          @keyup.enter="onSearch"
+          placeholder="검색어를 입력하세요. 장소와 게시판을 동시에 검색합니다."
+        />
+      </div>
       <button class="btn-search" @click="onSearch">검색</button>
     </div>
 
@@ -46,7 +51,7 @@
         class="btn-more"
         @click="gotoLocationList"
       >
-        더보기(+) 장소 더 보기
+        장소 더 보기 →
       </button>
     </section>
 
@@ -63,18 +68,19 @@
       </div>
 
       <div v-else class="post-list">
-        <article
+        <RouterLink
           v-for="post in pagedPosts"
           :key="post.id"
+          :to="`/posts/${post.id}`"
           class="post-card"
         >
           <h3>{{ post.title }}</h3>
           <p class="post-preview">{{ post.content }}</p>
           <div class="post-meta">
-            <span>👤 {{ post.nickname }}</span>
-            <span>📅 {{ formatDate(post.created_at) }}</span>
+            <span>{{ post.nickname }}</span>
+            <span>{{ formatDate(post.created_at) }}</span>
           </div>
-        </article>
+        </RouterLink>
       </div>
 
       <div v-if="totalPages > 1" class="pagination">
@@ -230,10 +236,12 @@ onMounted(loadResults)
 
 <style scoped>
 .search-results-page {
+  max-width: 1080px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 20px;
+  padding: 24px 40px 56px;
 }
 
 .search-panel {
@@ -241,28 +249,44 @@ onMounted(loadResults)
   gap: 10px;
 }
 
-.search-panel input {
+.search-input-wrap {
   flex: 1;
-  padding: 12px 14px;
-  border: 1px solid #d2d6dc;
-  border-radius: 10px;
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg, #fff);
+  border: 1.5px solid var(--border-strong, #e3ddd3);
+  border-radius: 999px;
+  padding: 13px 20px;
+  color: var(--text-faint, #a8a29e);
+}
+
+.search-input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ink, #1c1917);
 }
 
 .btn-search {
-  padding: 12px 20px;
+  padding: 0 24px;
   border: none;
-  background: #2563eb;
-  color: white;
-  border-radius: 10px;
+  background: var(--ink, #1c1917);
+  color: #fff;
+  border-radius: 999px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: 13.5px;
 }
 
 .section {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 20px;
+  background: var(--bg, #fff);
+  border: 1px solid var(--border, #ece7df);
+  border-radius: 16px;
+  padding: 24px;
 }
 
 .section-header {
@@ -273,38 +297,39 @@ onMounted(loadResults)
 }
 
 .section-header h2 {
-  margin: 0;
-  font-size: 1.15rem;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink, #1c1917);
 }
 
 .result-count {
-  color: #6b7280;
-  font-size: 0.95rem;
+  color: var(--text-muted, #78716c);
+  font-size: 13px;
 }
 
 .location-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 
 .location-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border: 1px solid var(--border, #ece7df);
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  background: #fafafa;
+  background: var(--surface, #faf9f7);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .location-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow);
 }
 
 .card-image {
   aspect-ratio: 4 / 3;
-  background: #f3f4f6;
+  background: var(--surface, #faf9f7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,35 +342,36 @@ onMounted(loadResults)
 }
 
 .card-image-fallback {
-  color: #9ca3af;
+  color: var(--text-faint, #a8a29e);
   padding: 16px;
   text-align: center;
 }
 
 .card-title {
-  padding: 8px 10px 0;
+  padding: 10px 12px 0;
   font-weight: 700;
-  font-size: 1rem;
-  text-align: left;
+  font-size: 14.5px;
+  color: var(--ink, #1c1917);
 }
 
 .card-district {
-  padding: 2px 10px 10px;
-  color: #6b7280;
-  font-size: 0.95rem;
+  padding: 3px 12px 12px;
+  color: var(--text-muted, #78716c);
+  font-size: 12.5px;
   font-weight: 500;
-  text-align: left;
 }
 
 .btn-more {
   margin-top: 18px;
   display: inline-flex;
-  padding: 10px 16px;
-  background: #1d4ed8;
-  color: white;
+  padding: 10px 18px;
+  background: var(--ink, #1c1917);
+  color: #fff;
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .post-list {
@@ -355,29 +381,34 @@ onMounted(loadResults)
 }
 
 .post-card {
+  display: block;
   padding: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border, #ece7df);
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--bg, #fff);
+  text-decoration: none;
 }
 
 .post-card h3 {
   margin: 0 0 8px;
-  font-size: 1.05rem;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink, #1c1917);
 }
 
 .post-preview {
   margin: 0 0 12px;
-  color: #4b5563;
+  color: var(--text, #57534e);
   line-height: 1.5;
+  font-size: 13.5px;
 }
 
 .post-meta {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  color: #6b7280;
-  font-size: 0.9rem;
+  color: var(--text-faint, #a8a29e);
+  font-size: 12.5px;
 }
 
 .pagination {
@@ -389,16 +420,18 @@ onMounted(loadResults)
 
 .pagination button {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 10px;
+  border: 1px solid var(--border-strong, #e3ddd3);
+  background: transparent;
+  border-radius: 8px;
   cursor: pointer;
+  color: var(--text, #57534e);
+  font-family: inherit;
 }
 
 .pagination button.active {
-  background: #2563eb;
-  color: white;
-  border-color: transparent;
+  background: var(--ink, #1c1917);
+  color: #fff;
+  border-color: var(--ink, #1c1917);
 }
 
 .pagination button:disabled {
@@ -407,9 +440,10 @@ onMounted(loadResults)
 }
 
 .empty-state {
-  color: #6b7280;
+  color: var(--text-muted, #78716c);
   padding: 24px 0;
   text-align: center;
+  font-size: 13.5px;
 }
 
 .empty-state.error {
