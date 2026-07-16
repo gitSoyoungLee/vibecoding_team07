@@ -26,6 +26,8 @@ class LocationBase(BaseModel):
     copyright_code: Optional[str]
     created_time: Optional[str]
     modified_time: Optional[str]
+    event_start_date: Optional[str]
+    event_end_date: Optional[str]
 
 class LocationOut(LocationBase):
     id: int

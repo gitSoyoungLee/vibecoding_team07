@@ -44,6 +44,9 @@ class Location(Base):
     created_time = Column(String)
     modified_time = Column(String)
 
+    event_start_date = Column(String)
+    event_end_date = Column(String)
+
 
 class Post(Base):
     __tablename__ = "posts"
