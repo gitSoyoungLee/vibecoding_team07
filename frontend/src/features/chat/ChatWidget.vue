@@ -51,6 +51,18 @@
           </button>
         </div>
 
+        <div v-if="messages.length <= 1" class="quick-prompts">
+          <button
+            v-for="prompt in quickPrompts"
+            :key="prompt.label"
+            type="button"
+            class="prompt-chip"
+            @click="startQuickPrompt(prompt.prompt)"
+          >
+            {{ prompt.label }}
+          </button>
+        </div>
+
         <div v-if="isLoading" class="message-row bot">
           <div class="bubble typing">답변 생성 중...</div>
         </div>
@@ -86,6 +98,11 @@ const position = ref({ x: 0, y: 0 })
 const size = ref({ width: 320, height: 420 })
 
 const messages = ref(loadMessages())
+const quickPrompts = [
+  { label: '홍대 친구 코스', prompt: '홍대 근처에서 친구랑 오후 2시부터 놀고 싶어' },
+  { label: '강남 데이트 코스', prompt: '강남에서 데이트 코스 추천해줘' },
+  { label: '비 오는 날 혼자 코스', prompt: '비 오는 날 혼자 여유롭게 서울에서 놀고 싶어' },
+]
 
 const boxStyle = computed(() => ({
   left: `${position.value.x}px`,
@@ -191,8 +208,8 @@ function handlePointerUp() {
   isResizing.value = false
 }
 
-async function submitMessage() {
-  const trimmed = input.value.trim()
+async function sendPrompt(prompt) {
+  const trimmed = prompt.trim()
   if (!trimmed || isLoading.value) return
 
   messages.value.push({ role: 'user', content: trimmed })
@@ -209,15 +226,31 @@ async function submitMessage() {
   }
 }
 
+async function submitMessage() {
+  await sendPrompt(input.value)
+}
+
 function sendSuggestion(text) {
   input.value = text
   submitMessage()
+}
+
+async function startQuickPrompt(prompt) {
+  if (!isOpen.value) {
+    toggleChat()
+  }
+  await sendPrompt(prompt)
 }
 
 onMounted(() => {
   setDefaultPosition()
   window.addEventListener('pointermove', handlePointerMove)
   window.addEventListener('pointerup', handlePointerUp)
+  window.addEventListener('travel-planner:prompt', (event) => {
+    if (event.detail?.prompt) {
+      startQuickPrompt(event.detail.prompt)
+    }
+  })
 })
 
 onBeforeUnmount(() => {
@@ -380,6 +413,23 @@ onBeforeUnmount(() => {
   cursor: nwse-resize;
   background: linear-gradient(135deg, transparent 40%, #cbd5e1 40%, #cbd5e1 60%, transparent 60%);
   border-radius: 3px;
+}
+
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.prompt-chip {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .chat-input-area {

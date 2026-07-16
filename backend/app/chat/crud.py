@@ -77,6 +77,104 @@ def _extract_keyword(message: str) -> str:
     return tokens[0]
 
 
+def _is_course_request(message: str) -> bool:
+    lowered = message.lower()
+    course_markers = ["코스", "루트", "일정", "오전", "오후", "시간", "근처", "친구", "데이트", "혼자", "놀고", "놀러", "가고", "가볼"]
+    return any(marker in lowered for marker in course_markers)
+
+
+def _extract_location(message: str) -> str:
+    lowered = message.lower()
+    location_candidates = [
+        "홍대",
+        "강남",
+        "이태원",
+        "명동",
+        "성수",
+        "연남",
+        "잠실",
+        "한강",
+        "광화문",
+        "경복궁",
+        "인사동",
+        "여의도",
+        "압구정",
+        "신촌",
+        "건대",
+    ]
+
+    for candidate in location_candidates:
+        if candidate in lowered:
+            return candidate
+
+    if "근처" in lowered or "에서" in lowered:
+        return "서울"
+    return "서울"
+
+
+def _extract_start_hour(message: str) -> int:
+    lowered = message.lower()
+    if "오후" in lowered:
+        if "12시" in lowered or "12" in lowered:
+            return 12
+        if "1시" in lowered or "1" in lowered:
+            return 13
+        if "2시" in lowered or "2" in lowered:
+            return 14
+        if "3시" in lowered or "3" in lowered:
+            return 15
+        if "4시" in lowered or "4" in lowered:
+            return 16
+        if "5시" in lowered or "5" in lowered:
+            return 17
+        if "6시" in lowered or "6" in lowered:
+            return 18
+    if "오전" in lowered:
+        if "10시" in lowered or "10" in lowered:
+            return 10
+        if "11시" in lowered or "11" in lowered:
+            return 11
+    for pattern in [r"(\d{1,2})시"]:
+        match = re.search(pattern, message)
+        if match:
+            hour = int(match.group(1))
+            return hour if 0 <= hour <= 23 else 14
+    return 14
+
+
+def _build_course_reply(message: str) -> str:
+    lowered = message.lower()
+    location = _extract_location(message)
+    start_hour = _extract_start_hour(message)
+    vibe = "친구와 즐기기 좋은" if "친구" in lowered else "데이트하기 좋은" if "데이트" in lowered else "여유로운"
+
+    steps = [
+        {
+            "time": start_hour,
+            "title": f"{location} 감성 카페",
+            "description": "사진과 대화가 잘 어울리는 분위기 있는 곳에서 시작해요.",
+        },
+        {
+            "time": start_hour + 2,
+            "title": f"{location} 산책 스팟",
+            "description": "둘러보기 좋은 거리나 공원을 천천히 즐겨요.",
+        },
+        {
+            "time": start_hour + 4,
+            "title": f"{location} 맛집 거리",
+            "description": "저녁 식사나 디저트로 마무리하면 만족도가 높아요.",
+        },
+    ]
+
+    lines = [f"🎵 {location} {vibe} 코스 추천", ""]
+    for step in steps:
+        lines.append(f"{step['time']:02d}:00 {step['title']}")
+        lines.append(f"- {step['description']}")
+    lines.append("")
+    lines.append("원하면 인원, 예산, 비 오는 날 여부까지 반영해서 더 세밀하게 바꿔드릴게요.")
+    return "\n".join(lines)
+
+
 def _format_post_results(posts) -> str:
     if not posts:
         return "관련 커뮤니티 게시글이 아직 없어요."
@@ -108,6 +206,9 @@ def get_chat_reply(message: str, db: Optional[Session] = None) -> str:
 
     text = message.strip()
     lowered = text.lower()
+
+    if _is_course_request(text):
+        return _build_course_reply(text)
 
     if any(keyword in lowered for keyword in ["게시글", "커뮤니티", "글", "후기", "검색"]):
         keyword = _extract_keyword(text) or "여행"
