@@ -41,7 +41,11 @@ onMounted(async () => {
   <Transition name="modal" appear>
     <div class="modal-overlay" @click.self="close" @keydown="onKeydown" tabindex="-1" ref="overlayEl">
       <div class="modal-box">
-        <button class="modal-close" @click="close" aria-label="닫기">×</button>
+        <button class="modal-close" @click="close" aria-label="닫기">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
 
         <div v-if="location.image_url" class="modal-image">
           <img :src="location.image_url" :alt="location.title" />
@@ -51,9 +55,13 @@ onMounted(async () => {
         <div class="modal-body">
           <h2 class="modal-title">{{ location.title }}</h2>
           <p class="modal-address">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 21s-6-5.3-6-10a6 6 0 1 1 12 0c0 4.7-6 10-6 10z" />
+              <circle cx="12" cy="11" r="2.2" />
+            </svg>
             {{ location.addr1 }}<span v-if="location.addr2"> {{ location.addr2 }}</span>
           </p>
-          <p v-if="location.tel" class="modal-tel">📞 {{ location.tel }}</p>
+          <p v-if="location.tel" class="modal-tel">{{ location.tel }}</p>
 
           <div v-show="hasCoords && !mapError" ref="mapContainer" class="modal-map"></div>
           <p v-if="mapError" class="modal-map-fallback">{{ mapError }}</p>
@@ -68,7 +76,7 @@ onMounted(async () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(28, 25, 23, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,32 +87,35 @@ onMounted(async () => {
 .modal-box {
   position: relative;
   background: var(--bg, #fff);
-  border-radius: 12px;
-  width: min(480px, 100%);
+  border-radius: 18px;
+  width: min(560px, 100%);
   max-height: 88vh;
   overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
 .modal-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 14px;
+  right: 14px;
   width: 32px;
   height: 32px;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  font-size: 1.2rem;
-  line-height: 1;
+  background: #fff;
+  color: var(--ink, #1c1917);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .modal-image {
   position: relative;
-  aspect-ratio: 4 / 3;
-  background: var(--code-bg, #f4f3ec);
+  aspect-ratio: 16 / 9;
+  background: var(--surface, #faf9f7);
 }
 
 .modal-image img {
@@ -118,43 +129,49 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text, #6b6375);
+  color: var(--text-faint, #a8a29e);
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 22px 26px 26px;
   text-align: left;
 }
 
 .modal-title {
   margin: 0 0 8px;
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink, #1c1917);
 }
 
 .modal-address {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin: 0 0 8px;
-  font-size: 0.85rem;
-  color: var(--text, #6b6375);
+  font-size: 13.5px;
+  color: var(--text-muted, #78716c);
 }
 
 .modal-tel {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 13.5px;
   font-weight: 500;
+  color: var(--text, #57534e);
 }
 
 .modal-map {
   margin-top: 16px;
   width: 100%;
-  height: 220px;
-  border-radius: 8px;
+  height: 190px;
+  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid var(--border, #ece7df);
 }
 
 .modal-map-fallback {
   margin-top: 16px;
-  color: var(--text, #6b6375);
+  color: var(--text-muted, #78716c);
   font-size: 0.85rem;
 }
 
